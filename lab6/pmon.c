@@ -21,17 +21,15 @@ pid_t getPtestid(){
 	FILE *p;
 	int len, or=0, pid;
 	int r;
-	char buf[2][20];
+	char buf[20];
 
-	if((p = popen("ps -a", "r")) == NULL){
+	if((p = popen("pidof ptest", "r")) == NULL){
 		printf("popen error\n");
 	}
 
-	while((len = fscanf(p, "%s%*s%*s%s", buf[0], buf[1])) > 0){
-		if(!strcmp(buf[1], "ptest")){
-			pclose(p);
-			return (pid_t)atoi(buf[0]);
-		}
+	while((len = fscanf(p, "%s", buf)) > 0){
+		pclose(p);
+		return (pid_t)atoi(buf);
 	}
 	
 	pclose(p);
@@ -77,16 +75,16 @@ int main(){
 				break;
 			case 'S': case 's':
 				if(getPtestid() == -1){
-					system("./ptest &");
+					system("gnome-terminal --command \"./ptest\"");
 				} else {
-					printf("already running");
+					printf("already running\n");
 				}
 				break;
 			case 'R': case 'r':
 				pid = getPtestid();
 				if(pid != -1){
 					if(kill(pid, SIGKILL) == 0){
-						system("./ptest &");
+						system("gnome-terminal --command \"./ptest\"");
 					}
 				} else{
 					printf("ptest is not existed\n");
