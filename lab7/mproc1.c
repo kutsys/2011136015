@@ -14,6 +14,8 @@ int main(){
 	pid_t pid[NUM_OF_CHILD];
 	int count=0, i, j, res, pipe_id[NUM_OF_CHILD];
 	char buf[NUM_OF_CHILD][8];
+	
+	printf("2011136015 김상균\n");
 
 	for(i=0;i<NUM_OF_CHILD;i++){
 		pid[i] = fork();
