@@ -35,6 +35,8 @@ int main(){
 
 	srand(time(NULL));
 
+	printf("2011136015 \n");
+	
 	for(i=0;i<NUM_OF_THREAD;i++){
 		res = pthread_create(&tid[i], NULL, subproc, &count[i]);
 		pthread_detach(tid[i]);
