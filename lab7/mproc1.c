@@ -48,7 +48,7 @@ int main(){
 				unlink(buf[j]);
 				i--;
 				fprintf(stdout,"%d: %d terminated\n", i, pid[j]);
-				waitpid(pid[j]);
+				waitpid(pid[j], NULL, 0);
 				pid[j] = 0;
 				fflush(stdout);
 			}
