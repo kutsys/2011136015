@@ -23,7 +23,7 @@ void* subproc(void *arg){
 		sleep(rand()%10);
 		while(1){
 			pthread_mutex_lock(&mymutex);
-			if((*count)<=min_count) break;
+			if((*count)<=min_count && (*count) != -1) break;
 			pthread_mutex_unlock(&mymutex);	
 		}
 		
@@ -97,6 +97,7 @@ int main(){
 				pthread_cancel(tid[j]);
 				printf("%d : %lu terminated\n", i, tid[j]);
 				tid[j] = -1;
+				count[j] = -1;
 			}
 		}
 	}	
