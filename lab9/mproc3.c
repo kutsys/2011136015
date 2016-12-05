@@ -11,6 +11,7 @@
 
 pthread_mutex_t mymutex;
 int min_count=0,res=0,num_of_thread=0;
+pthread_t tid[NUM_OF_THREAD];
 
 void* subproc(void *arg){
 	int *count= (int *)arg;
@@ -62,7 +63,6 @@ int isThread(){
 
 int main(){
 	int res, j, i;
-	pthread_t tid[NUM_OF_THREAD];
 	int count[NUM_OF_THREAD]={0};
 
 	pthread_mutex_init(&mymutex, NULL);
