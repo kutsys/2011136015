@@ -23,7 +23,7 @@ void* subproc(void *arg){
 		sleep(rand()%10);
 		while(1){
 			pthread_mutex_lock(&mymutex);
-			if((*count)<=min_count && (*count) != -1) break;
+			if((*count)<=min_count || (*count) != -1) break;
 			pthread_mutex_unlock(&mymutex);	
 		}
 		
