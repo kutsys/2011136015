@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -27,11 +28,30 @@ void* subproc(void *arg){
 	return NULL;
 }
 
+int isThread(){
+	FILE *p;
+	int count =0, len;
+	char *re;
+	char buf[3][15];
+
+	if((p = popen("ps -aL", "r")) == NULL){
+		printf("popen error\n");
+	}
+
+	while((len = fscanf(p, "%s %s %*s %*s", buf[0], buf[1])) > 0 && (re = fgets(buf[2], 15, p))!=NULL){
+		if((strcmp(buf[2], " mproc2\n") == 0)
+			 && (strcmp(buf[0], buf[1]) != 0)){
+			count++;
+		}
+	}
+	pclose(p);
+	return count;
+}
 
 int main(){
-	int res, i, j;
+	int res, j, i;
 	pthread_t tid[NUM_OF_THREAD];
-	int count[NUM_OF_THREAD];
+	int count[NUM_OF_THREAD]={0};
 
 	srand(time(NULL));
 
@@ -44,15 +64,16 @@ int main(){
 			perror("Thread creation failed"); exit(EXIT_FAILURE);
 		}
 	}	
-
-	while(i>0){
-		usleep(500);
+	i=0;
+	while(isThread()){
+		usleep(200);
 		for(j=0;j<NUM_OF_THREAD;j++){
 			if(tid[j] == -1) continue;
 
 			if(count[j] >= 20){
+				i++;
 				pthread_cancel(tid[j]);
-				i--;
+				printf("%d : %lu terminated\n", i, tid[j]);
 				tid[j] = -1;
 			}
 		}
