@@ -15,7 +15,7 @@ pthread_t tid[NUM_OF_THREAD];
 
 void* subproc(void *arg){
 	int *count= (int *)arg;
-	int isMutex = 0;
+	int isMutex = 0, j, num=0;
 	struct tm *t;
 	time_t timer;
 
@@ -33,7 +33,11 @@ void* subproc(void *arg){
 		(*count)++;
 		printf("%lu, %d:%d:%d, %d\n", pthread_self(), t->tm_hour, t->tm_min, t->tm_sec, *count);	
 		fflush(stdout);
-		res = (res+1)%NUM_OF_THREAD;
+	
+		for(j=0, num=0;j<NUM_OF_THREAD;j++){
+			if(tid[j] != -1) num++;
+		}
+		res = (res+1)%num;
 		if(res == 0) min_count++;
 
 		pthread_mutex_unlock(&mymutex);
