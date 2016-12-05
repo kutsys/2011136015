@@ -32,7 +32,7 @@ void* subproc(void *arg){
 		(*count)++;
 		printf("%lu, %d:%d:%d, %d\n", pthread_self(), t->tm_hour, t->tm_min, t->tm_sec, *count);	
 		fflush(stdout);
-		res = (res+1)%isThread();
+		res = (res+1)%NUM_OF_THREAD;
 		if(res == 0) min_count++;
 
 		pthread_mutex_unlock(&mymutex);
