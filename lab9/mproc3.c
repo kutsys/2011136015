@@ -48,7 +48,7 @@ void* subproc(void *arg){
 		else {
 			sem_post(&my_sem);
 		}
-	
+		if(count[k] == 20) break;
 	}
 	return NULL;
 }
@@ -84,7 +84,6 @@ int main(){
 	
 	for(i=0;i<NUM_OF_THREAD;i++){
 		res = pthread_create(&tid[i], NULL, subproc, (void *)&i);
-		pthread_detach(tid[i]);
 		if(res != 0){
 			perror("Thread creation failed"); exit(EXIT_FAILURE);
 		}
@@ -92,20 +91,9 @@ int main(){
 	}	
 	i=0;
 	sem_post(&my_sem);
-	while(1){
-		if(isThread() == 0) break;
-
-		usleep(200);
-		for(j=0;j<NUM_OF_THREAD;j++){
-			if(tid[j] == -1) continue;
-
-			if(count[j] >= 20){
-				i++;
-				pthread_cancel(tid[j]);
-				printf("%d : %lu terminated\n", i, tid[j]);
-				tid[j] = -1;
-			}
-		}
+	for(j=0;j<NUM_OF_THREAD;j++){
+		res = pthread_join(tid[j], &result);
+		if(res != 0) perror("join error");
 	}	
 
 	printf("finished (thread)\n");
