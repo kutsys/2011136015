@@ -3,44 +3,52 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pthread.h>
 
 #define NUM_OF_THREAD 10
 
-pthread_mutex_t mymutex;
-int min_count=0,res=0,num_of_thread=0;
+sem_t my_sem;
+int min_count=0,res=0;
+int count[NUM_OF_THREAD]={0};
 pthread_t tid[NUM_OF_THREAD];
 
+int getMinCount(){
+	int min=count[0], i;
+	for(i=0;i<NUM_OF_THREAD;i++){
+		if(count[i] < min) min = count[i];
+	}
+
+	return min;
+}
+
 void* subproc(void *arg){
-	int *count= (int *)arg;
-	int isMutex = 0, j, num=0;
+	int k= *(int *)arg;
+	int j, num=0;
 	struct tm *t;
 	time_t timer;
 
 	while(1){
-		sleep(rand()%10);
-		while(1){
-			pthread_mutex_lock(&mymutex);
-			if((*count)<=min_count) break;
-			pthread_mutex_unlock(&mymutex);	
+		sem_wait(&my_sem);
+		
+		min_count = getMinCount();
+		if(count[k] <= min_count){
+		
+			timer = time(NULL);
+			t = localtime(&timer);
+		
+			count[k]++;
+			printf("%lu, %d:%d:%d, %d\n", pthread_self(), t->tm_hour, t->tm_min, t->tm_sec, count[k]);	
+			fflush(stdout);
+			sem_post(&my_sem);
+			sleep(rand()%10);
 		}
-		
-		timer = time(NULL);
-		t = localtime(&timer);
-		
-		(*count)++;
-		printf("%lu, %d:%d:%d, %d\n", pthread_self(), t->tm_hour, t->tm_min, t->tm_sec, *count);	
-		fflush(stdout);
+		else {
+			sem_post(&my_sem);
+		}
 	
-		for(j=0, num=0;j<NUM_OF_THREAD;j++){
-			if(tid[j] != -1) num++;
-		}
-		res = (res+1)%num;
-		if(res == 0) min_count++;
-
-		pthread_mutex_unlock(&mymutex);
 	}
 	return NULL;
 }
@@ -67,27 +75,26 @@ int isThread(){
 
 int main(){
 	int res, j, i;
-	int count[NUM_OF_THREAD]={0};
+	void *result;
 
-	pthread_mutex_init(&mymutex, NULL);
-
+	sem_init(&my_sem, 0,0);
 	srand(time(NULL));
 
 	printf("2011136015 김상균\n");
 	
 	for(i=0;i<NUM_OF_THREAD;i++){
-		res = pthread_create(&tid[i], NULL, subproc, &count[i]);
+		res = pthread_create(&tid[i], NULL, subproc, (void *)&i);
 		pthread_detach(tid[i]);
-		num_of_thread++;
 		if(res != 0){
-			num_of_thread--;
 			perror("Thread creation failed"); exit(EXIT_FAILURE);
 		}
+		sleep(1);
 	}	
 	i=0;
+	sem_post(&my_sem);
 	while(1){
-		if(res == 0)num_of_thread = isThread();
-		if(num_of_thread == 0) break;
+		if(isThread() == 0) break;
+
 		usleep(200);
 		for(j=0;j<NUM_OF_THREAD;j++){
 			if(tid[j] == -1) continue;
@@ -102,6 +109,6 @@ int main(){
 	}	
 
 	printf("finished (thread)\n");
-	pthread_mutex_destroy(&mymutex);
+	sem_destroy(&my_sem);
 	return 0;
 }
