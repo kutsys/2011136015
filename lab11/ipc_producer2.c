@@ -19,7 +19,7 @@ typedef struct {
 
 int main(){
 	int res, my_pid, p, shmem_id;
-	char buffer[10];
+	char buffer[10],*k, sid[11]="2011136015";
 	sem_t *sem[2];
 	shared_memory *sh;
 	void *temp;	
@@ -39,26 +39,28 @@ int main(){
 		return 0;
 	}
 	sh = (shared_memory*)temp;
-
 	while(1){
-		sem_getvalue(sem[1], &res);
-		if(res == 0){
-			sem_post(sem[1]);
-		}
-		sem_wait(sem[0]);
-		if(strcmp(sh->s_id,"quit")== 0)
+		fgets(buffer, sizeof(buffer), stdin);
+		if(strcmp(buffer,"quit\n")== 0||strcmp(buffer,"q\n")==0||strcmp(buffer,"Q\n")==0)
 		{
-			sem_post(sem[1]);
+			strcpy(sh->s_id, "quit");
+			printf("%s", sh->s_id);
+			sem_post(sem[0]);
 			break;
 		}
-
-		printf("%s %d\n", sh->s_id, sh->pid);
+		else if(strcmp(buffer, "start\n") != 0)
+		{
+			continue;
+		}
+		sem_wait(sem[1]);
+		strcpy(sh->s_id, sid);
+		sh->pid = my_pid;
 		
-		strcpy(sh->name, "sang_gyun_kim");
-		sh->pid = getpid();
+		sem_post(sem[0]);
 
-		sem_post(sem[1]);
-		usleep(200);
+		sem_wait(sem[1]);
+
+		printf("ipc_producer: %d, %d, %s, %s\n",my_pid, sh->pid, sh->name, sh->s_id);
 	}
 			
 	if(shmdt(temp) == -1){
