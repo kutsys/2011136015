@@ -37,37 +37,44 @@ int main(){
 		fprintf(stderr, "msgget error\n");
 		return 0;
 	}
-
 	while(1){
-		sem_getvalue(sem[1], &res);
-		if(res == 0){
-			sem_post(sem[1]);
-		}
-		sem_wait(sem[0]);
-		
-		res = msgrcv(msq_id, &data, sizeof(t_data)-sizeof(long), 0, 0);
-		if(res == -1){
-			fprintf(stderr, "msgrcv error\n");
-			return 0;
-		}
-		if(strcmp(data.msg.s_id,"quit")== 0)
+		fgets(buffer, sizeof(buffer), stdin);
+		if(strcmp(buffer,"quit\n")== 0||strcmp(buffer,"q\n")==0||strcmp(buffer,"Q\n")==0)
 		{
-			sem_post(sem[1]);
+			data.data_type = 2;
+			strcpy(data.msg.s_id, "quit");
+			printf("%s", data.msg.s_id);
+			if(-1 == msgsnd(msq_id, &data, sizeof(t_data)-sizeof(long), 0)){
+				fprintf(stderr, "msgsnd error\n");
+				return 0;
+			}
+			sem_post(sem[0]);
 			break;
 		}
-
-		printf("%s %d\n", data.msg.s_id, data.msg.pid);
-		
+		else if(strcmp(buffer, "start\n") != 0)
+		{
+			continue;
+		}
+		sem_wait(sem[1]);
 		data.data_type = 2;
-		strcpy(data.msg.name, "sang_gyun_kim");
-		data.msg.pid = getpid();
+		strcpy(data.msg.s_id, sid);
+		data.msg.pid = my_pid;
 		if(-1 == msgsnd(msq_id, &data, sizeof(t_data)-sizeof(long), 0)){
 			fprintf(stderr, "msgsnd error\n");
 			return 0;
 		}
+		
+		sem_post(sem[0]);
 
-		sem_post(sem[1]);
-		usleep(300);
+		sem_wait(sem[1]);
+		
+		if(-1 == msgrcv(msq_id, &data, sizeof(t_data)-sizeof(long), 0, 0))
+		{
+			fprintf(stderr, "msgrcv error\n");
+			return 0;
+
+		}
+		printf("ipc_producer: %d, %d, %s, %s\n",my_pid, data.msg.pid, data.msg.name, sid);
 	}
 			
 	sem_unlink("producer_semaphore3");
