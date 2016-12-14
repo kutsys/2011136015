@@ -6,13 +6,6 @@
 #include <elf.h>
 
 #define BUF_SIZE 100
-#define OPT_E 1
-#define OPT_P 2
-#define OPT_S 4
-#define OPT_EP 3
-#define OPT_ES 5
-#define OPT_PS 6
-#define OPT_EPS 7
 
 typedef struct Hdr32{
 	Elf32_Ehdr ehdr;
